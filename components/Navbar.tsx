@@ -7,8 +7,13 @@ import { Button } from "./ui/button";
 import { SignOutButton, useUser } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";
 import Hamburger_Menu from "./ui/HamburgerMenu";
+import { IconBellRinging } from "@tabler/icons-react";
 
-const NavBar = () => {
+interface Props {
+  admin: String;
+}
+
+const NavBar: React.FC<Props> = ({ admin }) => {
   const { user } = useUser();
   const route = usePathname();
 
@@ -51,24 +56,42 @@ const NavBar = () => {
             {user ? (
               <div className="flex h-full items-center gap-1 space-x-4">
                 <div className="hidden md:flex h-full items-center justify-center space-x-1">
-                <Button
+                  {user.primaryEmailAddress?.emailAddress === admin && (
+                    <Button variant={"ghost"} className="">
+                      <IconBellRinging className="w-20 h-20" />
+                    </Button>
+                  )}
+                  <Button
                     variant={"ghost"}
                     asChild
-                    className={"border-[color:var(--secondary-500)] border sm:border-0" + (route === "/dashboard" ? " bg-slate-200" : "")}
+                    className={
+                      "border-[color:var(--secondary-500)] border sm:border-0" +
+                      (route === "/dashboard" ? " bg-slate-200" : "")
+                    }
                   >
                     <Link href="/inventory" className="text-lg font-bold">
                       Inventory
                     </Link>
                   </Button>
-                  <span
-                    className="h-6 w-px bg-gray-200 hidden md:flex"
-                    aria-hidden="true"
-                  />
+                  {user.primaryEmailAddress?.emailAddress === admin && (
+                    <Button
+                      variant={"ghost"}
+                      asChild
+                      className={
+                        "border-[color:var(--secondary-500)] border sm:border-0" +
+                        (route === "/dashboard" ? " bg-slate-200" : "")
+                      }
+                    >
+                      <Link href="/issued" className="text-lg font-bold">
+                        Issued
+                      </Link>
+                    </Button>
+                  )}
                   <SignOutButton>
                     <Button>Signout</Button>
                   </SignOutButton>
                 </div>
-                <Hamburger_Menu/>
+                <Hamburger_Menu />
               </div>
             ) : (
               <Button className="hidden sm:flex" asChild>
