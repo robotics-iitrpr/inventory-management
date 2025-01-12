@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSignUp, useUser } from "@clerk/nextjs";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -63,11 +63,12 @@ const SignUpPage = () => {
     return null;
   }
 
-  // If the user is already signed in,
-  // redirect them to the home page
-  if (user) {
-    router.push("/inventory");
-  }
+  useEffect(() => {
+    // Redirect to /inventory if the user is logged in
+    if (user) {
+      router.push("/inventory");
+    }
+  }, [user, router]);
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
@@ -248,14 +249,6 @@ const SignUpPage = () => {
                         <Label htmlFor="text" className="text-left">
                           Verification Code
                         </Label>
-                        {/* <Input
-                          id="code"
-                          placeholder="code"
-                          onChange={(e) => {
-                            setCode((e.target as HTMLInputElement).value);
-                            setBError("");
-                          }}
-                        /> */}
                         <PinInput
                           value={code}
                           onValueChange={(e) => setCode(e.value)}

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSignIn, useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import {
@@ -28,11 +28,12 @@ const SignInPage = () => {
     return null;
   }
 
-  // If the user is already signed in,
-  // redirect them to the home page
-  if (user) {
-    router.push("/inventory");
-  }
+  useEffect(() => {
+    // Redirect to /inventory if the user is logged in
+    if (user) {
+      router.push("/inventory");
+    }
+  }, [user, router]);
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();

@@ -25,7 +25,7 @@ const AddInventoryButton = () => {
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     // Allow only non-negative whole numbers
-    const numericValue = Math.max(0, Math.floor(Number(value)));
+    const numericValue = Math.max(1, Math.floor(Number(value)));
     setQuantity(numericValue);
   };
 
@@ -34,7 +34,7 @@ const AddInventoryButton = () => {
   useEffect(() => {
     if (component === "") return;
 
-    fetch(`/api/addInventory`, {
+    fetch(`/api/inventory`, {
       method: "POST",
       body: JSON.stringify({
         component: component,

@@ -7,7 +7,8 @@ import { Button } from "./ui/button";
 import { SignOutButton, useUser } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";
 import Hamburger_Menu from "./ui/HamburgerMenu";
-import { IconBellRinging } from "@tabler/icons-react";
+import { IconBellRinging, IconUserFilled } from "@tabler/icons-react";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
 interface Props {
   admin: String;
@@ -82,14 +83,29 @@ const NavBar: React.FC<Props> = ({ admin }) => {
                         (route === "/dashboard" ? " bg-slate-200" : "")
                       }
                     >
-                      <Link href="/issued" className="text-lg font-bold">
-                        Issued
+                      <Link href="/requests" className="text-lg font-bold">
+                        Requests
                       </Link>
                     </Button>
                   )}
-                  <SignOutButton>
-                    <Button>Signout</Button>
-                  </SignOutButton>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button className="rounded-full p-0 px-3 bg-gray-700 hover:bg-gray-600 text-white">
+                        <IconUserFilled/>
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-80 bg-white border border-gray-300 rounded-lg shadow-md p-4">
+                      <h1 className="text-lg font-semibold text-gray-800 mb-4 items-center space-x-2">
+                        <span>Welcome, {user.firstName}!</span>
+                        <span className="animate-wave">👋</span>
+                      </h1>
+                      <SignOutButton>
+                        <Button className="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2 rounded-md">
+                          Sign Out
+                        </Button>
+                      </SignOutButton>
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 <Hamburger_Menu />
               </div>

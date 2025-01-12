@@ -12,14 +12,17 @@ import {
 } from "@/components/ui/table";
 import { IconEdit, IconTrash } from "@tabler/icons-react";
 import { Button } from "./ui/button";
-import GetInventoryButton from "./getInventoryButton";
+import IssueInventoryButton from "./issueInventoryButton";
+import EditInventoryButton from "./editInventoryButton";
+import { User } from "@/models/models";
+import DeleteInventoryButton from "./deleteInventoryButton";
 
 interface Props {
-  email: String;
-  admin: String;
+  user: User;
+  admin: string;
 }
 
-const InventoryTable: React.FC<Props> = ({ email, admin }) => {
+const InventoryTable: React.FC<Props> = ({ user, admin }) => {
   const [inventory, setInventory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -27,12 +30,12 @@ const InventoryTable: React.FC<Props> = ({ email, admin }) => {
   useEffect(() => {
     const fetchInventory = async () => {
       try {
-        const response = await fetch("/api/getInventory"); // Adjust API endpoint as necessary
+        const response = await fetch("/api/inventory");
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
         const data = await response.json();
-        setInventory(data.inventory); // Use the `inventory` array from the response
+        setInventory(data.inventory);
       } catch (err) {
         console.error("Error fetching inventory:", err);
         setError("Failed to load inventory.");
@@ -75,22 +78,26 @@ const InventoryTable: React.FC<Props> = ({ email, admin }) => {
                 className="w-10 h-10"
               />
             </TableCell>
-            <TableCell className="font-medium w-[300px]">{item.component}</TableCell>
+            <TableCell className="font-medium w-[300px]">
+              {item.component}
+            </TableCell>
             <TableCell>{item.category}</TableCell>
             <TableCell>{item.inStock}</TableCell>
             <TableCell>{item.inUse}</TableCell>
             <TableCell className="text-right space-x-2">
-              {email === admin ? (
+              {user.email === admin ? (
                 <div className="flex space-x-2 justify-end">
-                  <Button>
-                    <IconEdit />
-                  </Button>
-                  <Button className="bg-red-700">
-                    <IconTrash />
-                  </Button>
+                  <EditInventoryButton
+                    component={item}
+                    user={user}
+                  />
+                  <DeleteInventoryButton user={user} component={item}/>
                 </div>
               ) : (
-                <GetInventoryButton component={item.component} inStock={item.inStock} image={item.image} />
+                <IssueInventoryButton
+                  component={item}
+                  user={user}
+                />
               )}
             </TableCell>
           </TableRow>
