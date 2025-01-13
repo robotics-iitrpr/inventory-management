@@ -17,23 +17,20 @@ import { Button } from "@/components/ui/button";
 const SignInPage = () => {
   // Below error
   const [bError, setBError] = useState("");
-
   const { isLoaded, signIn, setActive } = useSignIn();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { user } = useUser();
   const router = useRouter();
-
-  if (!isLoaded) {
-    return null;
-  }
-
   useEffect(() => {
     // Redirect to /inventory if the user is logged in
     if (user) {
       router.push("/inventory");
     }
   }, [user, router]);
+  if (!isLoaded) {
+    return null;
+  }
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();

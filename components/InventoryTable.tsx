@@ -10,12 +10,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { IconEdit, IconTrash } from "@tabler/icons-react";
-import { Button } from "./ui/button";
 import IssueInventoryButton from "./issueInventoryButton";
 import EditInventoryButton from "./editInventoryButton";
 import { User } from "@/models/models";
 import DeleteInventoryButton from "./deleteInventoryButton";
+import AdminIssueInventoryButton from "./adminIssueInventoryButton";
 
 interface Props {
   user: User;
@@ -87,9 +86,9 @@ const InventoryTable: React.FC<Props> = ({ user, admin }) => {
             <TableCell className="text-right space-x-2">
               {user.email === admin ? (
                 <div className="flex space-x-2 justify-end">
+                  <AdminIssueInventoryButton component={item}/>
                   <EditInventoryButton
                     component={item}
-                    user={user}
                   />
                   <DeleteInventoryButton user={user} component={item}/>
                 </div>

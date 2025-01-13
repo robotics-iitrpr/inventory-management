@@ -5,7 +5,6 @@ import MaxWidthWrapper from "./MaxWidthWrapper";
 import Link from "next/link";
 import { Button } from "./ui/button";
 import { SignOutButton, useUser } from "@clerk/nextjs";
-import { usePathname } from "next/navigation";
 import Hamburger_Menu from "./ui/HamburgerMenu";
 import { IconBellRinging, IconUserFilled } from "@tabler/icons-react";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
@@ -16,8 +15,6 @@ interface Props {
 
 const NavBar: React.FC<Props> = ({ admin }) => {
   const { user } = useUser();
-  const route = usePathname();
-
   return (
     <nav className="sticky h-14 inset-x-0 top-0 z-30 w-full border-b border-gray-200 bg-white/75 backdrop-blur-lg translate-all">
       <MaxWidthWrapper>
@@ -66,12 +63,22 @@ const NavBar: React.FC<Props> = ({ admin }) => {
                     variant={"ghost"}
                     asChild
                     className={
-                      "border-[color:var(--secondary-500)] border sm:border-0" +
-                      (route === "/dashboard" ? " bg-slate-200" : "")
+                      "border-[color:var(--secondary-500)] border sm:border-0"
                     }
                   >
                     <Link href="/inventory" className="text-lg font-bold">
                       Inventory
+                    </Link>
+                  </Button>
+                  <Button
+                    variant={"ghost"}
+                    asChild
+                    className={
+                      "border-[color:var(--secondary-500)] border sm:border-0"
+                    }
+                  >
+                    <Link href="/projects" className="text-lg font-bold">
+                      Projects
                     </Link>
                   </Button>
                   {user.primaryEmailAddress?.emailAddress === admin && (
@@ -79,8 +86,7 @@ const NavBar: React.FC<Props> = ({ admin }) => {
                       variant={"ghost"}
                       asChild
                       className={
-                        "border-[color:var(--secondary-500)] border sm:border-0" +
-                        (route === "/dashboard" ? " bg-slate-200" : "")
+                        "border-[color:var(--secondary-500)] border sm:border-0"
                       }
                     >
                       <Link href="/requests" className="text-lg font-bold">

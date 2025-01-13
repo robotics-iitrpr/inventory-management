@@ -7,6 +7,7 @@ import { Provider } from "@/components/ui/provider";
 import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin";
 import { extractRouterConfig } from "uploadthing/server";
 import { ourFileRouter } from "@/app/api/uploadthing/core";
+import { Toaster } from "@/components/ui/toaster";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,6 +39,7 @@ export default function RootLayout({
             <NavBar admin={process.env.ADMIN!}/>
             <NextSSRPlugin routerConfig={extractRouterConfig(ourFileRouter)} />
             {children}
+            <Toaster />
           </Provider>
         </body>
       </html>

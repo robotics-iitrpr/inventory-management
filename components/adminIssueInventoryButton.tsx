@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -15,16 +15,17 @@ import { Calendar } from "./ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { Component, User } from "@/models/models";
+import { Component } from "@/models/models";
 
 interface Props {
   component: Component;
-  user: User;
 }
 
-const IssueInventoryButton: React.FC<Props> = ({ component, user }) => {
+const AdminIssueInventoryButton: React.FC<Props> = ({ component }) => {
   const [phone, setPhone] = useState("");
   const [purpose, setPurpose] = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [date, setDate] = useState<Date>();
   const issueInventory = async () => {
@@ -36,22 +37,20 @@ const IssueInventoryButton: React.FC<Props> = ({ component, user }) => {
           inventoryId: component._id,
           component: component.component,
           image: component.image,
-          name: user.name,
-          email: user.email,
+          name: name,
+          email: email,
           phone: phone,
           purpose: purpose,
           quantity: quantity,
           date: date?.toISOString(),
           status: "Pending",
-          returned: false,
-          returnedProject: "",
         }),
         headers: {
           "Content-type": "application/json",
         },
       });
 
-      const result = await response.json();
+      await response.json();
     } catch (err: any) {
       console.error("Error updating status:", err);
       alert(err.message);
@@ -80,7 +79,7 @@ const IssueInventoryButton: React.FC<Props> = ({ component, user }) => {
           <div className="grid grid-cols-2">
             <div className="flex justify-end">
               <img
-                src={`https://utfs.io/f/${ component.image}`}
+                src={`https://utfs.io/f/${component.image}`}
                 alt={component.component}
                 className="w-20 h-20"
               />
@@ -99,17 +98,27 @@ const IssueInventoryButton: React.FC<Props> = ({ component, user }) => {
               <Label htmlFor="name" className="text-right">
                 Name:
               </Label>
-              <Label htmlFor="name" className="font-extrabold col-span-3">
-                {user.name}
-              </Label>
+              <Input
+                id="name"
+                placeholder="Name of Issuer"
+                className="col-span-3"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="username" className="text-right">
                 Email
               </Label>
-              <Label htmlFor="name" className="font-extrabold col-span-3">
-                {user.email}
-              </Label>
+              <Input
+                id="email"
+                placeholder="Email of Issuer"
+                className="col-span-3"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="username" className="text-right">
@@ -187,4 +196,4 @@ const IssueInventoryButton: React.FC<Props> = ({ component, user }) => {
   );
 };
 
-export default IssueInventoryButton;
+export default AdminIssueInventoryButton;

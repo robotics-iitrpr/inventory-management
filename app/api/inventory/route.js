@@ -2,14 +2,14 @@ import client from "@/lib/mongo";
 import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
 
-export async function POST(req) {
+export async function GET(req) {
   try {
     const database = client.db("Inventory");
     const collection = database.collection("Robotics");
 
-    const document = await req.json();
-    await collection.insertOne(document);
-    return NextResponse.json({ Result: "Success" });
+    const inventory = await collection.find({}).toArray();
+
+    return NextResponse.json({ inventory: inventory });
   } catch (error) {
     console.error("Error fetching collections:", error);
     return NextResponse.json(
@@ -19,14 +19,14 @@ export async function POST(req) {
   }
 }
 
-export async function GET(req) {
+export async function POST(req) {
   try {
     const database = client.db("Inventory");
     const collection = database.collection("Robotics");
 
-    const inventory = await collection.find({}).toArray();
-
-    return NextResponse.json({ inventory: inventory });
+    const document = await req.json();
+    await collection.insertOne(document);
+    return NextResponse.json({ Result: "Success" });
   } catch (error) {
     console.error("Error fetching collections:", error);
     return NextResponse.json(
@@ -58,8 +58,18 @@ export async function PUT(req) {
           },
         }
       );
+    } else if (document.task === 2) {
+      const result = await collection.updateOne(
+        { _id: new ObjectId(document._id) },
+        {
+          $inc: {
+            inUse: -document.quantity,
+          },
+        }
+      );
     }
-    return NextResponse.json({ Result: "Success" });
+
+    return NextResponse.json({ Result: "Success"}, {status: 200 });
   } catch (error) {
     console.error("Error fetching collections:", error);
     return NextResponse.json(

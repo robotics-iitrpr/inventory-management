@@ -26,4 +26,16 @@ export type Request = {
     date: string;
     status: string;
     returned: boolean;
+    returnedProject: string;
+}
+
+export type Project = {
+    _id: string;
+    title: string;
+    leadName: string;
+    leadEmail: string;
+    image: string;
+    completed: boolean;
+    startDate: string;
+    endDate: string;
 }

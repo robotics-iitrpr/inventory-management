@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -14,11 +14,10 @@ import { IconEdit } from "@tabler/icons-react";
 import { Component, User } from "@/models/models";
 
 interface EditInventoryProps {
-  component: Component,
-  user: User
+  component: Component
 }
 const EditInventoryButton: React.FC<EditInventoryProps> = ({
-  component, user
+  component
 }) => {
   const [newComponent, setNewComponent] = useState(component.component);
   const [newCategory, setNewCategory] = useState(component.category);

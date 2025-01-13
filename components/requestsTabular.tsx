@@ -5,6 +5,9 @@ import { Tabs } from "@chakra-ui/react";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { IconInfoCircle } from "@tabler/icons-react";
 import { format } from "date-fns";
+import { Project, Request } from "@/models/models";
+import { useToast } from "@/hooks/use-toast";
+import MarkAsReturnButton from "./markAsReturnButton";
 
 const RequestsTabular = () => {
   const [pendingRequests, setPendingRequests] = useState([]);
@@ -12,12 +15,14 @@ const RequestsTabular = () => {
   const [rejectedRequests, setRejectedRequests] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [projects, setProjects] = React.useState([]);
+  const { toast } = useToast();
 
   // getting Requests
   useEffect(() => {
     const fetchRequests = async () => {
       try {
-        const response = await fetch("/api/requests");
+        const response = await fetch("/api/request");
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
@@ -78,8 +83,11 @@ const RequestsTabular = () => {
           alreadyBeingUsed = component.inUse;
         } else {
           // Insufficient stock
-          
-          alert(`Insufficient stock. Available: ${component.inStock - component.inUse}, Required: ${quantityNeeded}.`);
+          toast({
+            title: "Insufficient stock",
+            description: `Available: ${component.inStock - component.inUse}
+            \nRequired: ${quantityNeeded}.`,
+          });
           return;
         }
       } catch (err) {
@@ -88,9 +96,7 @@ const RequestsTabular = () => {
       } finally {
         setLoading(false);
       }
-    }
-    else
-      return;
+    } else return;
 
     // Updating Stock
     try {
@@ -110,8 +116,6 @@ const RequestsTabular = () => {
       if (!response.ok) {
         throw new Error(result.error || "Failed to update status.");
       }
-
-      alert(result.message);
     } catch (err: any) {
       console.error("Error updating status:", err);
       alert(err.message);
@@ -124,18 +128,39 @@ const RequestsTabular = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ _id: requestId, status: status, task: 0 }),
+        body: JSON.stringify({ _id: requestId, task: 0, status: status }),
       });
 
       const result = await response.json();
       if (!response.ok) {
         throw new Error(result.error || "Failed to update status.");
       }
+      toast({
+        title: "Status Updated!!",
+      });
     } catch (err: any) {
       console.error("Error updating status:", err);
       alert(err.message);
     }
   };
+
+  // Getting Projects list
+  React.useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const response = await fetch("/api/projects");
+        const data = await response.json();
+        const projectTitles = data.projects.map(
+          (project: Project) => project.title
+        );
+        setProjects(projectTitles);
+      } catch (err: any) {
+        console.error("Error fetching projects:", err);
+        alert(err.message);
+      }
+    };
+    fetchProjects();
+  }, []);
 
   if (loading) {
     return <p>Loading...</p>;
@@ -191,6 +216,7 @@ const RequestsTabular = () => {
                       <span className="font-normal">{req.component}</span> (x
                       {req.quantity})
                     </p>
+
                     <p className="font-semibold text-gray-800">
                       Return Date:{" "}
                       <span className="font-normal">
@@ -225,6 +251,7 @@ const RequestsTabular = () => {
                         </p>
                         <p>Purpose: {req.purpose}</p>
                         <p>Return: {req.date}</p>
+                        <div className="w-full grid grid-cols-2"></div>
                       </PopoverContent>
                     </Popover>
                   </div>
@@ -272,63 +299,206 @@ const RequestsTabular = () => {
       >
         <h2 className="text-lg font-bold mb-4">Approved Requests</h2>
         {approvedRequests.length > 0 ? (
-          <ul className="space-y-4">
-            {approvedRequests.map((req: any) => (
-              <li
-                key={req._id}
-                className="p-4 bg-white shadow-md rounded-md border border-gray-200"
-              >
-                <div className="flex justify-between">
-                  <div>
-                    <p className="font-semibold text-gray-800">
-                      Name: <span className="font-normal">{req.name}</span>
-                    </p>
-                    <p className="font-semibold text-gray-800">
-                      Component:{" "}
-                      <span className="font-normal">{req.component}</span> (x
-                      {req.quantity})
-                    </p>
-                    <p className="font-semibold text-gray-800">
-                      Return Date:{" "}
-                      <span className="font-normal">
-                        {format(new Date(req.date), "dd-MM-yyyy")}
-                      </span>
-                    </p>
-                    <p className="font-semibold text-gray-800 flex items-center">
-                      Purpose:
-                      <span
-                        className="ml-2 text-gray-600 text-ellipsis overflow-hidden whitespace-nowrap max-w-[200px]"
-                        title={req.purpose}
+          <div>
+            {/* Overdue Requests */}
+            {approvedRequests.some(
+              (req: any) => new Date(req.date) < new Date() && !req.returned
+            ) && (
+              <div>
+                <h3 className="text-xl font-bold text-red-600 mb-4">
+                  Overdue Requests
+                </h3>
+                <ul className="space-y-4">
+                  {approvedRequests
+                    .filter(
+                      (req: Request) =>
+                        new Date(req.date) < new Date() && !req.returned
+                    )
+                    .map((req: Request) => (
+                      <li
+                        key={req._id}
+                        className="p-4 bg-red-50 shadow-md rounded-md border border-red-300"
                       >
-                        {req.purpose}
-                      </span>
-                    </p>
-                  </div>
-                  <div>
-                    <Popover>
-                      <PopoverTrigger>
-                        <IconInfoCircle />
-                      </PopoverTrigger>
-                      <PopoverContent
-                        side="right"
-                        align="start"
-                        className="p-4 bg-white shadow-md border border-gray-300 rounded-md"
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <p className="font-semibold text-gray-800">
+                              Name:{" "}
+                              <span className="font-normal">{req.name}</span>
+                            </p>
+                            <p className="font-semibold text-gray-800">
+                              Component:{" "}
+                              <span className="font-normal">
+                                {req.component}
+                              </span>{" "}
+                              (x
+                              {req.quantity})
+                            </p>
+                            <p className="font-semibold text-red-600">
+                              Return Date:{" "}
+                              <span className="font-normal">
+                                {format(new Date(req.date), "dd-MM-yyyy")}
+                              </span>
+                            </p>
+                            <p className="font-semibold text-gray-800 flex items-center">
+                              Purpose:
+                              <span
+                                className="ml-2 text-gray-600 text-ellipsis overflow-hidden whitespace-nowrap max-w-[200px]"
+                                title={req.purpose}
+                              >
+                                {req.purpose}
+                              </span>
+                            </p>
+                          </div>
+                          <div className="flex space-x-2">
+                            <MarkAsReturnButton req={req} projects={projects} />
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Non-Overdue Requests */}
+            {approvedRequests.some(
+              (req: any) => new Date(req.date) >= new Date() && !req.returned
+            ) && (
+              <div>
+                <h3 className="text-xl font-bold text-gray-700 mt-8 mb-4">
+                  Other Approved Requests
+                </h3>
+                <ul className="space-y-4">
+                  {approvedRequests
+                    .filter(
+                      (req: any) =>
+                        new Date(req.date) >= new Date() && !req.returned
+                    )
+                    .map((req: any) => (
+                      <li
+                        key={req._id}
+                        className="p-4 bg-white shadow-md rounded-md border border-gray-200"
                       >
-                        <p className="font-semibold">Name: {req.name}</p>
-                        <p>Email: {req.email}</p>
-                        <p>Phone: {req.phone}</p>
-                        <p>
-                          Component: {req.component} (x{req.quantity})
-                        </p>
-                        <p>Purpose: {req.purpose}</p>
-                        <p>Return: {format(new Date(req.date), "dd-MM-yyyy")}</p>
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <p className="font-semibold text-gray-800">
+                              Name:{" "}
+                              <span className="font-normal">{req.name}</span>
+                            </p>
+                            <p className="font-semibold text-gray-800">
+                              Component:{" "}
+                              <span className="font-normal">
+                                {req.component}
+                              </span>{" "}
+                              (x
+                              {req.quantity})
+                            </p>
+                            <p className="font-semibold text-gray-800">
+                              Return Date:{" "}
+                              <span className="font-normal">
+                                {format(new Date(req.date), "dd-MM-yyyy")}
+                              </span>
+                            </p>
+                            <p className="font-semibold text-gray-800 flex items-center">
+                              Purpose:
+                              <span
+                                className="ml-2 text-gray-600 text-ellipsis overflow-hidden whitespace-nowrap max-w-[200px]"
+                                title={req.purpose}
+                              >
+                                {req.purpose}
+                              </span>
+                            </p>
+                          </div>
+                          <div className="flex space-x-2">
+                            <MarkAsReturnButton req={req} projects={projects} />
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Returned Requests */}
+            {approvedRequests.some((req: any) => req.returned) && (
+              <div>
+                <h3 className="text-xl font-bold mt-8 mb-4 text-green-500">
+                  Returned Components
+                </h3>
+                <ul className="space-y-4">
+                  {approvedRequests
+                    .filter((req: Request) => req.returned)
+                    .map((req: Request) => (
+                      <li
+                        key={req._id}
+                        className="p-4 bg-gray-50 shadow-md rounded-md border border-gray-300"
+                      >
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <p className="font-semibold text-gray-800">
+                              Name:{" "}
+                              <span className="font-normal">{req.name}</span>
+                            </p>
+                            <p className="font-semibold text-gray-800">
+                              Component:{" "}
+                              <span className="font-normal">
+                                {req.component}
+                              </span>{" "}
+                              (x
+                              {req.quantity})
+                            </p>
+                            {req.returnedProject !== "" && (
+                              <p className="font-semibold text-gray-800">
+                                Returned By Project:{" "}
+                                <span className="font-normal">
+                                  {req.returnedProject}
+                                </span>
+                              </p>
+                            )}
+                            <p className="font-semibold text-gray-800">
+                              Return Date:{" "}
+                              <span className="font-normal">
+                                {format(new Date(req.date), "dd-MM-yyyy")}
+                              </span>
+                            </p>
+                            <p className="font-semibold text-gray-800 flex items-center">
+                              Purpose:
+                              <span
+                                className="ml-2 text-gray-600 text-ellipsis overflow-hidden whitespace-nowrap max-w-[200px]"
+                                title={req.purpose}
+                              >
+                                {req.purpose}
+                              </span>
+                            </p>
+                          </div>
+                          <div>
+                            <Popover>
+                              <PopoverTrigger>
+                                <IconInfoCircle />
+                              </PopoverTrigger>
+                              <PopoverContent
+                                side="right"
+                                align="start"
+                                className="p-4 bg-white shadow-md border border-gray-300 rounded-md"
+                              >
+                                <p className="font-semibold">
+                                  Name: {req.name}
+                                </p>
+                                <p>Email: {req.email}</p>
+                                <p>Phone: {req.phone}</p>
+                                <p>
+                                  Component: {req.component} (x{req.quantity})
+                                </p>
+                                <p>Purpose: {req.purpose}</p>
+                              </PopoverContent>
+                            </Popover>
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                </ul>
+              </div>
+            )}
+          </div>
         ) : (
           <p>No approved requests.</p>
         )}
@@ -356,6 +526,12 @@ const RequestsTabular = () => {
                       Component:{" "}
                       <span className="font-normal">{req.component}</span> (x
                       {req.quantity})
+                    </p>
+                    <p className="font-semibold text-gray-800">
+                      Return Date:{" "}
+                      <span className="font-normal">
+                        {format(new Date(req.date), "dd-MM-yyyy")}
+                      </span>
                     </p>
                     <p className="font-semibold text-gray-800">
                       Return Date:{" "}

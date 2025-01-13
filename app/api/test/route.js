@@ -10,7 +10,7 @@
       const collection = database.collection("Requests");
       const result = await collection.updateMany(
         {},
-        { $set: { "returned": false } }
+        { $set: { "returnedProject": "" } }
       );
   
       if (result.matchedCount === 0) {
