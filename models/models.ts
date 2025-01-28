@@ -3,6 +3,14 @@ export type User = {
     name: string;
     email: string;
 }
+export type Usage = {
+    _id: string;
+    project: boolean;
+    name: string;
+    email: string;
+    phone: string;
+    quantity: number;
+}
 
 export type Component = {
     _id: string;
@@ -11,6 +19,7 @@ export type Component = {
     category: string;
     inStock: number;
     inUse: number;
+    usedWhere: Usage[];
 }
 
 export type Request = {
@@ -38,4 +47,16 @@ export type Project = {
     completed: boolean;
     startDate: string;
     endDate: string;
+}
+
+export type userInventory = {
+    _id: string;
+    inventoryId: string;
+    inventoryName: string;
+    inventoryImage: string;
+    quantity: string;
+    purpose: string;
+    returningData: string;
+    returned: boolean;
+    status: boolean;
 }

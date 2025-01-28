@@ -3,20 +3,17 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { Project, User } from "@/models/models";
 import AddProjectButton from "./addProjectButton";
-import {
-  IconCircleDashedCheck,
-  IconTrash,
-} from "@tabler/icons-react";
+import { IconCircleDashedCheck, IconTrash } from "@tabler/icons-react";
 import { Button } from "./ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { useToast } from "@/hooks/use-toast";
 
 interface props {
   user: User;
-  admin: string;
+  isAdmin: boolean;
 }
 
-const ProjectsSection: React.FC<props> = ({ user, admin }) => {
+const ProjectsSection: React.FC<props> = ({ user, isAdmin }) => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
@@ -50,7 +47,7 @@ const ProjectsSection: React.FC<props> = ({ user, admin }) => {
           "Content-type": "application/json",
         },
       });
-      toast({title: "Project Deleted!"});
+      toast({ title: "Project Deleted!" });
     } catch (error) {
       console.error("Error fetching projects:", error);
     } finally {
@@ -71,7 +68,7 @@ const ProjectsSection: React.FC<props> = ({ user, admin }) => {
           "Content-type": "application/json",
         },
       });
-      toast({title: "Project Marked as completed!"});
+      toast({ title: "Project Marked as completed!" });
     } catch (error) {
       console.error("Error fetching projects:", error);
     } finally {
@@ -81,7 +78,7 @@ const ProjectsSection: React.FC<props> = ({ user, admin }) => {
 
   return (
     <div className="p-8">
-      {user?.email === admin && <AddProjectButton />}
+      {isAdmin && <AddProjectButton />}
       {loading ? (
         <div className="w-full flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500"></div>
@@ -91,25 +88,27 @@ const ProjectsSection: React.FC<props> = ({ user, admin }) => {
           {projects.map((project: Project) => (
             <div
               key={project._id}
-              className="bg-white shadow-md rounded-lg overflow-hidden"
+              className="bg-gradient-to-br from-white to-gray-50 shadow-lg rounded-xl overflow-hidden transition transform hover:scale-105 hover:shadow-2xl"
             >
               <img
                 src={`https://utfs.io/f/${project.image}`}
                 alt={project.title}
-                className="w-full h-48 object-cover"
+                className="w-full h-52 object-cover rounded-t-xl"
               />
-              <div className="p-4">
-                <h2 className="text-xl font-bold text-gray-800 flex items-center justify-between">
+              <div className="p-6">
+                <h2 className="text-2xl font-semibold text-gray-900 flex items-center justify-between">
                   {project.title}
-                  {user?.email === admin && (
-                    <div className="space-x-4">
-                      <button
-                        className="text-blue-500 hover:text-blue-700 transition"
-                        onClick={() => completedProject(project)}
-                        title="Mark as Complete"
-                      >
-                        <IconCircleDashedCheck size={20} />
-                      </button>
+                  {isAdmin && (
+                    <div className="space-x-3 flex items-center">
+                      {project.completed === false && (
+                        <button
+                          className="text-blue-600 hover:text-blue-800 transition"
+                          onClick={() => completedProject(project)}
+                          title="Mark as Complete"
+                        >
+                          <IconCircleDashedCheck size={20} />
+                        </button>
+                      )}
                       <Popover>
                         <PopoverTrigger asChild>
                           <button
@@ -122,18 +121,23 @@ const ProjectsSection: React.FC<props> = ({ user, admin }) => {
                         <PopoverContent className="w-80">
                           <div className="grid gap-4">
                             <div className="space-y-2">
-                              <h4 className="font-medium leading-none">
+                              <h4 className="font-semibold">
                                 Delete this Project
                               </h4>
-                              <p className="text-sm text-muted-foreground">
-                                Are your sure want to delete this Project?
+                              <p className="text-sm text-gray-600">
+                                Are you sure you want to delete this Project?
                               </p>
                             </div>
-                            <div className="grid gap-2">
-                              <Button onClick={() => deleteProject(project)}>
+                            <div className="grid grid-cols-2 gap-2">
+                              <Button
+                                onClick={() => deleteProject(project)}
+                                className="bg-red-500 hover:bg-red-600 text-white"
+                              >
                                 Yes
                               </Button>
-                              <Button>No</Button>
+                              <Button className="bg-gray-200 hover:bg-gray-300 text-gray-800">
+                                No
+                              </Button>
                             </div>
                           </div>
                         </PopoverContent>
@@ -141,7 +145,7 @@ const ProjectsSection: React.FC<props> = ({ user, admin }) => {
                     </div>
                   )}
                 </h2>
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-gray-500 mt-2">
                   Lead: {project.leadName} (
                   <a
                     href={`mailto:${project.leadEmail}`}
@@ -161,7 +165,7 @@ const ProjectsSection: React.FC<props> = ({ user, admin }) => {
                     : "Ongoing"}
                 </p>
                 <div
-                  className={`mt-4 px-3 py-1 rounded-full text-sm font-medium ${
+                  className={`mt-6 px-4 py-2 rounded-full text-center text-sm font-medium transition ${
                     project.completed
                       ? "bg-green-100 text-green-700"
                       : "bg-yellow-100 text-yellow-700"

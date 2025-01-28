@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Button } from "./ui/button";
 import { SignOutButton, useUser } from "@clerk/nextjs";
 import Hamburger_Menu from "./ui/HamburgerMenu";
-import { IconBellRinging, IconUserFilled } from "@tabler/icons-react";
+import { IconUserFilled } from "@tabler/icons-react";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
 interface Props {
@@ -15,14 +15,19 @@ interface Props {
 
 const NavBar: React.FC<Props> = ({ admin }) => {
   const { user } = useUser();
+  let isAdmin = false;
+  // Checking if admin
+  admin.split(",").forEach((adm) => {
+    if (user?.primaryEmailAddress?.emailAddress == adm) isAdmin = true;
+  });
   return (
-    <nav className="sticky h-14 inset-x-0 top-0 z-30 w-full border-b border-gray-200 bg-white/75 backdrop-blur-lg translate-all">
+    <nav className="sticky h-14 inset-x-0 top-0 z-30 w-full border-b border-gray-400 backdrop-blur-lg translate-all">
       <MaxWidthWrapper>
         <div className="flex justify-between pl-2 pr-2 items-center h-full w-full">
           <div className="flex h-full items-center gap-2">
             <Link href="/">
               <img
-                src="/robo-logo.png"
+                src="/bost.png"
                 className="lg:h-10 lg:w-10 h-8 w-8 rounded-full"
               />
             </Link>
@@ -54,11 +59,6 @@ const NavBar: React.FC<Props> = ({ admin }) => {
             {user ? (
               <div className="flex h-full items-center gap-1 space-x-4">
                 <div className="hidden md:flex h-full items-center justify-center space-x-1">
-                  {user.primaryEmailAddress?.emailAddress === admin && (
-                    <Button variant={"ghost"} className="">
-                      <IconBellRinging className="w-20 h-20" />
-                    </Button>
-                  )}
                   <Button
                     variant={"ghost"}
                     asChild
@@ -81,7 +81,20 @@ const NavBar: React.FC<Props> = ({ admin }) => {
                       Projects
                     </Link>
                   </Button>
-                  {user.primaryEmailAddress?.emailAddress === admin && (
+                  {!isAdmin && (
+                    <Button
+                      variant={"ghost"}
+                      asChild
+                      className={
+                        "border-[color:var(--secondary-500)] border sm:border-0"
+                      }
+                    >
+                      <Link href="/my-inventory" className="text-lg font-bold">
+                        My Inventory
+                      </Link>
+                    </Button>
+                  )}
+                  {isAdmin && (
                     <Button
                       variant={"ghost"}
                       asChild
@@ -97,7 +110,7 @@ const NavBar: React.FC<Props> = ({ admin }) => {
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button className="rounded-full p-0 px-3 bg-gray-700 hover:bg-gray-600 text-white">
-                        <IconUserFilled/>
+                        <IconUserFilled />
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-80 bg-white border border-gray-300 rounded-lg shadow-md p-4">
@@ -113,7 +126,7 @@ const NavBar: React.FC<Props> = ({ admin }) => {
                     </PopoverContent>
                   </Popover>
                 </div>
-                <Hamburger_Menu />
+                <Hamburger_Menu isAdmin={isAdmin}/>
               </div>
             ) : (
               <Button className="hidden sm:flex" asChild>

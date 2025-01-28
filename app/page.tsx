@@ -1,9 +1,12 @@
-import Image from "next/image";
-
 export default function Home() {
   return (
-    <div>
-        {/* <Image src="/robo.png" alt="Robotics Club" width={400} height={400}/> */}
+    <div className="flex flex-col items-center justify-center">
+        <img
+          src="/bost.png"
+          alt="BoST Logo"
+          className="h-40 mx-auto mt-10"
+        />
+        <h1 className="text-black text-6xl text-center font-bold mt-3 w-1/2">Inventory Management Portal</h1>
     </div>
   );
 }

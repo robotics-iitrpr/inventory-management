@@ -59,16 +59,16 @@ const SignUpPage = () => {
 
   const { toast } = useToast();
 
-  if (!isLoaded) {
-    return null;
-  }
-
   useEffect(() => {
     // Redirect to /inventory if the user is logged in
     if (user) {
       router.push("/inventory");
     }
   }, [user, router]);
+
+  if (!isLoaded && bError === "") {
+    return null;
+  }
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
@@ -132,13 +132,13 @@ const SignUpPage = () => {
     setPassword(value);
     setStrength(calculatePasswordStrength(value));
   };
-  
+
   return (
     <div className="flex pt-5 flex-col items-center justify-center lg:px-0">
       <div className="mx-auto flex w-full flex-col justify-center space-y-6">
         <div className="flex flex-col items-center space-y-2 text-center">
           <img
-            src="/robo-logo.png"
+            src="/bost.png"
             className="md:h-20 md:w-20 h-14 w-14 rounded-full"
           />
           <div className="w-full mx-auto rounded-none md:rounded-2xl md:p-4 shadow-input">
@@ -196,8 +196,15 @@ const SignUpPage = () => {
                           placeholder="email@example.com"
                           type="email"
                           onChange={(e) => {
-                            setEmail((e.target as HTMLInputElement).value);
-                            setBError("");
+                            const email = (e.target as HTMLInputElement).value;
+                            setEmail(email);
+                            if (!email.endsWith("@iitrpr.ac.in")) {
+                              setBError(
+                                "Only @iitrpr.ac.in emails are allowed."
+                              );
+                            } else {
+                              setBError("");
+                            }
                           }}
                         />
                       </div>

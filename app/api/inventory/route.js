@@ -45,7 +45,21 @@ export async function PUT(req) {
     if (document.task === 0) {
       const result = await collection.updateOne(
         { _id: new ObjectId(document._id) },
-        { $set: { inUse: document.quantity } }
+        {
+          $set: {
+            inUse: document.quantity,
+          },
+          $push: {
+            usedWhere: {
+              _id: new ObjectId(),
+              project: document.project,
+              name: document.name,
+              email: document.email,
+              phone: document.phone,
+              quantity: document.quantity,
+            },
+          },
+        }
       );
     } else if (document.task === 1) {
       const result = await collection.updateOne(
@@ -69,7 +83,7 @@ export async function PUT(req) {
       );
     }
 
-    return NextResponse.json({ Result: "Success"}, {status: 200 });
+    return NextResponse.json({ Result: "Success" }, { status: 200 });
   } catch (error) {
     console.error("Error fetching collections:", error);
     return NextResponse.json(

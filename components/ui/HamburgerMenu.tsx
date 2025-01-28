@@ -3,7 +3,11 @@ import "./menu.css";
 import { SignOutButton } from "@clerk/nextjs";
 import { Button } from "./button";
 
-const Hamburger_Menu = () => {
+interface Props {
+  isAdmin: boolean;
+}
+
+const Hamburger_Menu: React.FC<Props> = ({ isAdmin }) => {
   const [showMenu, setShowMenu] = useState(false);
   const handleMenuClick = () => {
     setShowMenu(!showMenu);
@@ -23,6 +27,19 @@ const Hamburger_Menu = () => {
             <li>
               <a href="/inventory">Inventory</a>
             </li>
+            <li>
+              <a href="/inventory">Projects</a>
+            </li>
+            {!isAdmin && (
+              <li>
+                <a href="/my-inventory">My Inventory</a>
+              </li>
+            )}
+            {isAdmin && (
+              <li>
+                <a href="/requests">Requests</a>
+              </li>
+            )}
             <SignOutButton>
               <Button>Signout</Button>
             </SignOutButton>

@@ -25,9 +25,10 @@ import { useToast } from "@/hooks/use-toast";
 interface props {
   req: Request;
   projects: string[];
+  getReqsFunc: () => void;
 }
 
-const MarkAsReturnButton: React.FC<props> = ({ req, projects }) => {
+const MarkAsReturnButton: React.FC<props> = ({ req, projects, getReqsFunc }) => {
   const [open, setOpen] = React.useState(false);
   const [value, setValue] = React.useState("");
   const { toast } = useToast();
@@ -89,13 +90,15 @@ const MarkAsReturnButton: React.FC<props> = ({ req, projects }) => {
         console.log("Request response:", results[0]); // Only request response
       }
       toast ({title: "Returned!!"});
+      getReqsFunc();
     } catch (err: any) {
       console.error("Error in processing requests:", err);
-      // alert(err.message);        /* ErrorHere */
+      alert(err.message);
     }
   };
 
   const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
     returningComponent(1);
   };
 

@@ -1,3 +1,4 @@
+"use client"
 import React, { useState } from "react";
 import {
   Dialog,
@@ -16,6 +17,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { Component, User } from "@/models/models";
+import { useToast } from "@/hooks/use-toast";
 
 interface Props {
   component: Component;
@@ -27,10 +29,13 @@ const IssueInventoryButton: React.FC<Props> = ({ component, user }) => {
   const [purpose, setPurpose] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [date, setDate] = useState<Date>();
-  const issueInventory = async () => {
+  const { toast } = useToast();
+  const [open, setOpen] = useState(false);
+  const issueInventory = async (e: any) => {
+    e.preventDefault();
     // Issue Inventory Request
     try {
-      const response = await fetch(`/api/request`, {
+      await fetch(`/api/request`, {
         method: "POST",
         body: JSON.stringify({
           inventoryId: component._id,
@@ -44,14 +49,39 @@ const IssueInventoryButton: React.FC<Props> = ({ component, user }) => {
           date: date?.toISOString(),
           status: "Pending",
           returned: false,
-          returnedProject: "",
+          returnedProject: ""
+        }),
+        headers: {
+          "Content-type": "application/json",
+        },
+      });
+    } catch (err: any) {
+      console.error("Error updating status:", err);
+      alert(err.message);
+    }
+
+    // Adding requests to user_data
+    try {
+      const response = await fetch(`/api/user_data?pn=${user.id}`, {
+        method: "POST",
+        body: JSON.stringify({
+          inventoryId: component._id,
+          inventoryName: component.component,
+          inventoryImage: component.image,
+          purpose: purpose,
+          quantity: quantity,
+          returningDate: date?.toISOString(),
+          status: "Pending",
+          returned: false
         }),
         headers: {
           "Content-type": "application/json",
         },
       });
 
-      const result = await response.json();
+      await response.json();
+      toast ({title: "Requested!!"});
+      setOpen(false);
     } catch (err: any) {
       console.error("Error updating status:", err);
       alert(err.message);
@@ -68,7 +98,7 @@ const IssueInventoryButton: React.FC<Props> = ({ component, user }) => {
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>
           <IconGitPullRequest />
@@ -80,7 +110,7 @@ const IssueInventoryButton: React.FC<Props> = ({ component, user }) => {
           <div className="grid grid-cols-2">
             <div className="flex justify-end">
               <img
-                src={`https://utfs.io/f/${ component.image}`}
+                src={`https://utfs.io/f/${component.image}`}
                 alt={component.component}
                 className="w-20 h-20"
               />

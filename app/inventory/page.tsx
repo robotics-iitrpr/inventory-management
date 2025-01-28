@@ -12,12 +12,19 @@ const InventoryPage = async () => {
     name: user?.fullName!,
     email:user?.primaryEmailAddress?.emailAddress!
   }
+  const admins = process.env.ADMIN?.split(',');
+  let isAdmin = false;
+  admins!.forEach((admin) => {
+    if (curUser.email === admin) {
+      isAdmin = true;
+    }
+  });
   return (
-    <div className="mt-10 mx-5 rounded-xl p-3 border border-black">
-      {user?.primaryEmailAddress?.emailAddress === process.env.ADMIN && (
+    <div className="mt-10 mx-5 rounded-xl p-3 shadow-lg border border-gray-200 relative mb-5">
+      {isAdmin && (
         <AddInventoryButton />
       )}
-      <InventoryTable user={curUser} admin={process.env.ADMIN!}/>
+      <InventoryTable user={curUser} isAdmin={isAdmin}/>
     </div>
   );
 };

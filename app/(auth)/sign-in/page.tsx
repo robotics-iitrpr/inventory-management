@@ -62,7 +62,7 @@ const SignInPage = () => {
       <div className="mx-auto flex w-full flex-col justify-center space-y-6">
         <div className="flex flex-col items-center space-y-2 text-center">
           <img
-            src="/robo-logo.png"
+            src="/bost.png"
             className="md:h-20 md:w-20 h-14 w-14 rounded-full"
           />
           <div className="mx-auto rounded-none md:rounded-2xl shadow-input bg-white sm:w-auto w-full flex justify-center">

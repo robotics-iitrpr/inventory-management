@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import MarkAsReturnButton from "./markAsReturnButton";
 
 const RequestsTabular = () => {
+  const [getRequests, setGetRequests] = useState(false);
   const [pendingRequests, setPendingRequests] = useState([]);
   const [approvedRequests, setApprovedRequests] = useState([]);
   const [rejectedRequests, setRejectedRequests] = useState([]);
@@ -17,7 +18,7 @@ const RequestsTabular = () => {
   const [loading, setLoading] = useState(true);
   const [projects, setProjects] = React.useState([]);
   const { toast } = useToast();
-
+  
   // getting Requests
   useEffect(() => {
     const fetchRequests = async () => {
@@ -47,14 +48,12 @@ const RequestsTabular = () => {
     };
 
     fetchRequests();
-  }, []);
+  }, [getRequests]);
 
   // Function to update request status
   const updateRequestStatus = async (
-    requestId: string,
-    quantityNeeded: number,
+    req: Request,
     status: string,
-    componentId: string
   ) => {
     let alreadyBeingUsed = 0;
     if (status === "Approved") {
@@ -68,7 +67,7 @@ const RequestsTabular = () => {
 
         // Find the component in the inventory
         const component = data.inventory.find(
-          (item: any) => item._id === componentId
+          (item: any) => item._id === req.inventoryId
         );
 
         if (!component) {
@@ -79,14 +78,14 @@ const RequestsTabular = () => {
         }
 
         // Check stock availability
-        if (component.inStock - component.inUse >= quantityNeeded) {
+        if (component.inStock - component.inUse >= req.quantity) {
           alreadyBeingUsed = component.inUse;
         } else {
           // Insufficient stock
           toast({
             title: "Insufficient stock",
             description: `Available: ${component.inStock - component.inUse}
-            \nRequired: ${quantityNeeded}.`,
+            \nRequired: ${req.quantity}.`,
           });
           return;
         }
@@ -96,7 +95,7 @@ const RequestsTabular = () => {
       } finally {
         setLoading(false);
       }
-    } else return;
+    }
 
     // Updating Stock
     try {
@@ -107,8 +106,12 @@ const RequestsTabular = () => {
         },
         body: JSON.stringify({
           task: 0,
-          _id: componentId,
-          quantity: alreadyBeingUsed + quantityNeeded,
+          _id: req.inventoryId,
+          project: false,
+          email: req.email,
+          name: req.name,
+          phone: req.phone,
+          quantity: alreadyBeingUsed + req.quantity,
         }),
       });
 
@@ -128,7 +131,7 @@ const RequestsTabular = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ _id: requestId, task: 0, status: status }),
+        body: JSON.stringify({ _id: req._id, task: 0, status: status }),
       });
 
       const result = await response.json();
@@ -136,8 +139,9 @@ const RequestsTabular = () => {
         throw new Error(result.error || "Failed to update status.");
       }
       toast({
-        title: "Status Updated!!",
+        title: "Done!!",
       });
+      gettingRequests();
     } catch (err: any) {
       console.error("Error updating status:", err);
       alert(err.message);
@@ -162,8 +166,17 @@ const RequestsTabular = () => {
     fetchProjects();
   }, []);
 
+  // Re-getting requests
+  const gettingRequests = () => {
+    setGetRequests(!getRequests);
+  };
+
   if (loading) {
-    return <p>Loading...</p>;
+    return (
+      <div className="w-full flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500"></div>
+      </div>
+    );
   }
 
   if (error) {
@@ -172,7 +185,7 @@ const RequestsTabular = () => {
 
   return (
     <Tabs.Root defaultValue="pending" className="w-full">
-      <Tabs.List className="flex justify-around bg-gray-100 rounded-md p-2">
+      <Tabs.List className="flex justify-around bg-gray-100/40 backdrop-blur-lg rounded-md p-2">
         <Tabs.Trigger
           value="pending"
           className="px-6 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-200 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-md"
@@ -260,10 +273,8 @@ const RequestsTabular = () => {
                   <button
                     onClick={() =>
                       updateRequestStatus(
-                        req._id,
-                        req.quantity,
+                        req,
                         "Approved",
-                        req.inventoryId
                       )
                     }
                     className="px-4 py-2 bg-green-500 text-white rounded-md shadow hover:bg-green-600"
@@ -273,10 +284,8 @@ const RequestsTabular = () => {
                   <button
                     onClick={() =>
                       updateRequestStatus(
-                        req._id,
-                        req.quantity,
+                        req,
                         "Rejected",
-                        req.inventoryId
                       )
                     }
                     className="px-4 py-2 bg-red-500 text-white rounded-md shadow hover:bg-red-600"
@@ -350,7 +359,7 @@ const RequestsTabular = () => {
                             </p>
                           </div>
                           <div className="flex space-x-2">
-                            <MarkAsReturnButton req={req} projects={projects} />
+                            <MarkAsReturnButton req={req} projects={projects} getReqsFunc={gettingRequests} />
                           </div>
                         </div>
                       </li>
@@ -409,7 +418,7 @@ const RequestsTabular = () => {
                             </p>
                           </div>
                           <div className="flex space-x-2">
-                            <MarkAsReturnButton req={req} projects={projects} />
+                            <MarkAsReturnButton req={req} projects={projects}  getReqsFunc={gettingRequests} />
                           </div>
                         </div>
                       </li>
