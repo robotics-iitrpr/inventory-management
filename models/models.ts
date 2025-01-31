@@ -36,6 +36,7 @@ export type Request = {
     status: string;
     returned: boolean;
     returnedProject: string;
+    usageId: string;
 }
 
 export type Project = {

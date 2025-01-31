@@ -21,6 +21,7 @@ import {
 import AdminIssueInventoryButton from "./adminIssueInventoryButton";
 import { Button } from "./ui/button";
 import { IconTrash } from "@tabler/icons-react";
+import InventoryInfoButton from "./inventoryInfoButton";
 
 interface Props {
   user: User;
@@ -122,6 +123,7 @@ const InventoryTable: React.FC<Props> = ({ user, isAdmin }) => {
             <TableCell className="text-right space-x-2">
               {isAdmin ? (
                 <div className="flex space-x-2 justify-end">
+                  <InventoryInfoButton component={item}/>
                   <AdminIssueInventoryButton component={item} />
                   <EditInventoryButton component={item} />
                   {/* <DeleteInventoryButton user={user} component={item} /> */}

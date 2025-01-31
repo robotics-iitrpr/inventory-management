@@ -18,7 +18,7 @@ const RequestsTabular = () => {
   const [loading, setLoading] = useState(true);
   const [projects, setProjects] = React.useState([]);
   const { toast } = useToast();
-  
+
   // getting Requests
   useEffect(() => {
     const fetchRequests = async () => {
@@ -51,10 +51,7 @@ const RequestsTabular = () => {
   }, [getRequests]);
 
   // Function to update request status
-  const updateRequestStatus = async (
-    req: Request,
-    status: string,
-  ) => {
+  const updateRequestStatus = async (req: Request, status: string) => {
     let alreadyBeingUsed = 0;
     if (status === "Approved") {
       // Checking Stock
@@ -95,33 +92,34 @@ const RequestsTabular = () => {
       } finally {
         setLoading(false);
       }
-    }
 
-    // Updating Stock
-    try {
-      const response = await fetch(`/api/inventory`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          task: 0,
-          _id: req.inventoryId,
-          project: false,
-          email: req.email,
-          name: req.name,
-          phone: req.phone,
-          quantity: alreadyBeingUsed + req.quantity,
-        }),
-      });
+      // Updating Stock
+      try {
+        const response = await fetch(`/api/inventory`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            task: 0,
+            _id: req.inventoryId,
+            project: false,
+            email: req.email,
+            name: req.name,
+            phone: req.phone,
+            reqQuantity: req.quantity,
+            quantity: alreadyBeingUsed + req.quantity,
+          }),
+        });
 
-      const result = await response.json();
-      if (!response.ok) {
-        throw new Error(result.error || "Failed to update status.");
+        const result = await response.json();
+        if (!response.ok) {
+          throw new Error(result.error || "Failed to update status.");
+        }
+      } catch (err: any) {
+        console.error("Error updating status:", err);
+        alert(err.message);
       }
-    } catch (err: any) {
-      console.error("Error updating status:", err);
-      alert(err.message);
     }
 
     // Updating status
@@ -271,23 +269,13 @@ const RequestsTabular = () => {
                 </div>
                 <div className="flex gap-4 mt-4">
                   <button
-                    onClick={() =>
-                      updateRequestStatus(
-                        req,
-                        "Approved",
-                      )
-                    }
+                    onClick={() => updateRequestStatus(req, "Approved")}
                     className="px-4 py-2 bg-green-500 text-white rounded-md shadow hover:bg-green-600"
                   >
                     ✓ Approve
                   </button>
                   <button
-                    onClick={() =>
-                      updateRequestStatus(
-                        req,
-                        "Rejected",
-                      )
-                    }
+                    onClick={() => updateRequestStatus(req, "Rejected")}
                     className="px-4 py-2 bg-red-500 text-white rounded-md shadow hover:bg-red-600"
                   >
                     ✕ Reject
@@ -359,7 +347,11 @@ const RequestsTabular = () => {
                             </p>
                           </div>
                           <div className="flex space-x-2">
-                            <MarkAsReturnButton req={req} projects={projects} getReqsFunc={gettingRequests} />
+                            <MarkAsReturnButton
+                              req={req}
+                              projects={projects}
+                              getReqsFunc={gettingRequests}
+                            />
                           </div>
                         </div>
                       </li>
@@ -418,7 +410,11 @@ const RequestsTabular = () => {
                             </p>
                           </div>
                           <div className="flex space-x-2">
-                            <MarkAsReturnButton req={req} projects={projects}  getReqsFunc={gettingRequests} />
+                            <MarkAsReturnButton
+                              req={req}
+                              projects={projects}
+                              getReqsFunc={gettingRequests}
+                            />
                           </div>
                         </div>
                       </li>

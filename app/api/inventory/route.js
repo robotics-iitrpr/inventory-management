@@ -43,20 +43,22 @@ export async function PUT(req) {
 
     const document = await req.json();
     if (document.task === 0) {
+      const usageId = new  ObjectId();
       const result = await collection.updateOne(
         { _id: new ObjectId(document._id) },
         {
           $set: {
             inUse: document.quantity,
+            usageId: usageId,
           },
           $push: {
             usedWhere: {
-              _id: new ObjectId(),
+              _id: usageId,
               project: document.project,
               name: document.name,
               email: document.email,
               phone: document.phone,
-              quantity: document.quantity,
+              quantity: document.reqQuantity,
             },
           },
         }
