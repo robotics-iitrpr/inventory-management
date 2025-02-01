@@ -107,6 +107,7 @@ const RequestsTabular = () => {
             email: req.email,
             name: req.name,
             phone: req.phone,
+            reqId: req._id,
             reqQuantity: req.quantity,
             quantity: alreadyBeingUsed + req.quantity,
           }),
@@ -120,6 +121,24 @@ const RequestsTabular = () => {
         console.error("Error updating status:", err);
         alert(err.message);
       }
+    }
+
+    // Updating User-Data
+    try {
+      const response = await fetch(`/api/user_data?pn=${req.userId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          task:  0,
+          reqId: req._id,
+          status: status,
+        }),
+      });
+    } catch (err: any) {
+      console.error("Error updating user-data:", err);
+      alert(err.message);
     }
 
     // Updating status

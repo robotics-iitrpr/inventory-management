@@ -10,6 +10,8 @@ export type Usage = {
     email: string;
     phone: string;
     quantity: number;
+    reqId: string;
+    projectName: string;
 }
 
 export type Component = {
@@ -27,6 +29,7 @@ export type Request = {
     inventoryId: string;
     component: string;
     image: string;
+    userId: string;
     name: string;
     email: string;
     phone: string;
@@ -50,8 +53,9 @@ export type Project = {
     endDate: string;
 }
 
-export type userInventory = {
+export type UserInventory = {
     _id: string;
+    reqId: string;
     inventoryId: string;
     inventoryName: string;
     inventoryImage: string;
@@ -59,5 +63,5 @@ export type userInventory = {
     purpose: string;
     returningData: string;
     returned: boolean;
-    status: boolean;
+    status: string;
 }

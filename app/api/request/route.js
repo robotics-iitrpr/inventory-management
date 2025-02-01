@@ -24,8 +24,8 @@ export async function POST(req) {
     const database = client.db("Inventory");
     const collection = database.collection("Requests");
     const document = await req.json();
-    await collection.insertOne(document);
-    return NextResponse.json({ Result: "Success" });
+    const res = await collection.insertOne(document);
+    return NextResponse.json(res);
   } catch (error) {
     console.error("Error updating status:", error);
     return NextResponse.json(

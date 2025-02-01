@@ -43,13 +43,12 @@ export async function PUT(req) {
 
     const document = await req.json();
     if (document.task === 0) {
-      const usageId = new  ObjectId();
-      const result = await collection.updateOne(
+      const usageId = new ObjectId();
+      await collection.updateOne(
         { _id: new ObjectId(document._id) },
         {
           $set: {
             inUse: document.quantity,
-            usageId: usageId,
           },
           $push: {
             usedWhere: {
@@ -59,6 +58,7 @@ export async function PUT(req) {
               email: document.email,
               phone: document.phone,
               quantity: document.reqQuantity,
+              reqId: document.reqId,
             },
           },
         }
@@ -75,11 +75,25 @@ export async function PUT(req) {
         }
       );
     } else if (document.task === 2) {
-      const result = await collection.updateOne(
+      await collection.updateOne(
         { _id: new ObjectId(document._id) },
         {
           $inc: {
             inUse: -document.quantity,
+          },
+          $pull: { usedWhere: { reqId: { $in: [document.reqId] } } },
+        }
+      );
+    } else if (document.task === 3) {
+      await collection.updateOne(
+        {
+          _id: new ObjectId(document._id),
+          "usedWhere.reqId": document.reqId,
+        },
+        {
+          $set: {
+            "usedWhere.$.project": true,
+            "usedWhere.$.projectName": document.project,
           },
         }
       );

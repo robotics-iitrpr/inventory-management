@@ -33,14 +33,20 @@ const IssueInventoryButton: React.FC<Props> = ({ component, user }) => {
   const [open, setOpen] = useState(false);
   const issueInventory = async (e: any) => {
     e.preventDefault();
+    type ReqId = {
+      acknowledged: boolean;
+      insertedId: string;
+    }
+    let reqId;
     // Issue Inventory Request
     try {
-      await fetch(`/api/request`, {
+      const res = await fetch(`/api/request`, {
         method: "POST",
         body: JSON.stringify({
           inventoryId: component._id,
           component: component.component,
           image: component.image,
+          userId: user.id,    // For notifications
           name: user.name,
           email: user.email,
           phone: phone,
@@ -55,6 +61,7 @@ const IssueInventoryButton: React.FC<Props> = ({ component, user }) => {
           "Content-type": "application/json",
         },
       });
+      reqId = await res.json() as ReqId;
     } catch (err: any) {
       console.error("Error updating status:", err);
       alert(err.message);
@@ -68,6 +75,7 @@ const IssueInventoryButton: React.FC<Props> = ({ component, user }) => {
           inventoryId: component._id,
           inventoryName: component.component,
           inventoryImage: component.image,
+          reqId: reqId?.insertedId,
           purpose: purpose,
           quantity: quantity,
           returningDate: date?.toISOString(),
@@ -82,6 +90,9 @@ const IssueInventoryButton: React.FC<Props> = ({ component, user }) => {
       await response.json();
       toast ({title: "Requested!!"});
       setOpen(false);
+      setPhone("");
+      setPurpose("");
+      setQuantity(1);
     } catch (err: any) {
       console.error("Error updating status:", err);
       alert(err.message);
@@ -204,6 +215,9 @@ const IssueInventoryButton: React.FC<Props> = ({ component, user }) => {
                     mode="single"
                     selected={date}
                     onSelect={setDate}
+                    disabled={(date) =>
+                      date < new Date()
+                    }
                     initialFocus
                   />
                 </PopoverContent>

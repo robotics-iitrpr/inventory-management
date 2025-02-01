@@ -28,7 +28,11 @@ interface props {
   getReqsFunc: () => void;
 }
 
-const MarkAsReturnButton: React.FC<props> = ({ req, projects, getReqsFunc }) => {
+const MarkAsReturnButton: React.FC<props> = ({
+  req,
+  projects,
+  getReqsFunc,
+}) => {
   const [open, setOpen] = React.useState(false);
   const [value, setValue] = React.useState("");
   const { toast } = useToast();
@@ -46,8 +50,30 @@ const MarkAsReturnButton: React.FC<props> = ({ req, projects, getReqsFunc }) => 
           },
           body: JSON.stringify({
             _id: req.inventoryId,
+            reqId: req._id,
             task: 2,
             quantity: req.quantity,
+          }),
+        }).then((response) => {
+          if (!response.ok) {
+            throw new Error(`Inventory update failed: ${response.statusText}`);
+          }
+          return response.json(); // If you expect JSON response, handle parsing here
+        });
+
+        promises.push(inventoryUpdatePromise);
+      } else {
+        const inventoryUpdatePromise = fetch(`api/inventory`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            _id: req.inventoryId,
+            reqId: req._id,
+            task: 3,
+            quantity: req.quantity,
+            project: value,
           }),
         }).then((response) => {
           if (!response.ok) {
@@ -79,6 +105,20 @@ const MarkAsReturnButton: React.FC<props> = ({ req, projects, getReqsFunc }) => 
 
       promises.push(requestUpdatePromise);
 
+      // Returning user component
+      try {
+        await fetch(`/api/user_data?pn=${req.userId}`, {
+          method: "PUT",
+          body: JSON.stringify({
+            task: 1,
+            reqId: req._id,
+            returned: true,
+          }),
+        });
+      } catch (err) {
+        console.error("Error fetching inventory:", err);
+      }
+
       // Execute all promises concurrently
       const results = await Promise.all(promises);
 
@@ -89,7 +129,7 @@ const MarkAsReturnButton: React.FC<props> = ({ req, projects, getReqsFunc }) => 
       } else {
         console.log("Request response:", results[0]); // Only request response
       }
-      toast ({title: "Returned!!"});
+      toast({ title: "Returned!!" });
       getReqsFunc();
     } catch (err: any) {
       console.error("Error in processing requests:", err);
