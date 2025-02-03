@@ -21,6 +21,7 @@ import {
 import { Button } from "./ui/button";
 import { IconTrash } from "@tabler/icons-react";
 import InventoryInfoButton from "./inventoryInfoButton";
+import { useToast } from "@/hooks/use-toast";
 
 interface Props {
   user: User;
@@ -39,6 +40,7 @@ const InventoryTable: React.FC<Props> = ({
   const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchInventory = async () => {
@@ -98,13 +100,13 @@ const InventoryTable: React.FC<Props> = ({
     );
   };
 
-  const deleteInventory = async (id: string) => {
+  const deleteInventory = async (id: string, cat: string) => {
     try {
       const response = await fetch(`/api/inventory`, {
         method: "DELETE",
         body: JSON.stringify({
           _id: id,
-          category: category,
+          category: cat,
         }),
         headers: {
           "Content-Type": "application/json",
@@ -112,6 +114,7 @@ const InventoryTable: React.FC<Props> = ({
       });
       await response.json();
       removeBlock(id);
+      toast({title: "Deleted!!"})
     } catch (err: any) {
       console.error("Error updating status:", err);
       alert(err.message);
@@ -144,7 +147,7 @@ const InventoryTable: React.FC<Props> = ({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {inventory.map((item: any) => (
+        {inventory.map((item: Component) => (
           <TableRow key={item._id}>
             <TableCell className="w-[100px]">
               <img
@@ -183,7 +186,7 @@ const InventoryTable: React.FC<Props> = ({
                         <div className="grid gap-2">
                           <Button
                             onClick={() => {
-                              deleteInventory(item._id);
+                              deleteInventory(item._id, item.category);
                             }}
                           >
                             Yes

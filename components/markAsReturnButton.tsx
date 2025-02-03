@@ -25,12 +25,14 @@ import { useToast } from "@/hooks/use-toast";
 interface props {
   req: Request;
   projects: string[];
+  category: string;
   getReqsFunc: () => void;
 }
 
 const MarkAsReturnButton: React.FC<props> = ({
   req,
   projects,
+  category,
   getReqsFunc,
 }) => {
   const [open, setOpen] = React.useState(false);
@@ -49,6 +51,7 @@ const MarkAsReturnButton: React.FC<props> = ({
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
+            category: category,
             _id: req.inventoryId,
             reqId: req._id,
             task: 2,
@@ -69,6 +72,7 @@ const MarkAsReturnButton: React.FC<props> = ({
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
+            category: category,
             _id: req.inventoryId,
             reqId: req._id,
             task: 3,
@@ -92,6 +96,7 @@ const MarkAsReturnButton: React.FC<props> = ({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          category: category,
           _id: req._id,
           task: 1,
           returnedProject: value,
@@ -139,7 +144,10 @@ const MarkAsReturnButton: React.FC<props> = ({
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    returningComponent(1);
+    if (value !== "")
+      returningComponent(1);
+    else
+      alert("Select a project");
   };
 
   return (

@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { UploadButton } from "@/lib/utils/uploadthing";
 import { useState } from "react";
 import { User } from "@/models/models";
-import { SuperAdminInventoryCategoryCombo } from "./InventoryPage/superAdminInventoryCategory";
+import SuperAdminInventoryCategoryCombo from "./InventoryPage/superAdminInventoryCategory";
 
 interface Props {
   user: User;
@@ -30,6 +30,7 @@ const AddInventoryButton: React.FC<Props> = ({
 }) => {
   const [component, setComponent] = useState("");
   const [quantity, setQuantity] = useState(0);
+  const [invCategory, setInvCategory] = useState(category);
   const [image, setImage] = useState("");
   const [imageName, setImageName] = useState("");
 
@@ -49,7 +50,7 @@ const AddInventoryButton: React.FC<Props> = ({
       body: JSON.stringify({
         component: component,
         image: image,
-        category: category,
+        category: invCategory,
         inStock: quantity,
         inUse: 0,
       }),
@@ -119,7 +120,7 @@ const AddInventoryButton: React.FC<Props> = ({
               <Label htmlFor="name" className="text-right text-lg font-bold">
                 Category
               </Label>
-              {isSuperAdmin ? <SuperAdminInventoryCategoryCombo /> : (
+              {isSuperAdmin ? <SuperAdminInventoryCategoryCombo onChange={setInvCategory}/> : (
                 <Label htmlFor="name" className="text-right text-lg font-black">
                   {category}
                 </Label>

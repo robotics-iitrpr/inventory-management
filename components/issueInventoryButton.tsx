@@ -43,6 +43,7 @@ const IssueInventoryButton: React.FC<Props> = ({ component, user }) => {
       const res = await fetch(`/api/request`, {
         method: "POST",
         body: JSON.stringify({
+          category: component.category,
           inventoryId: component._id,
           component: component.component,
           image: component.image,

@@ -5,11 +5,23 @@ import { Tabs } from "@chakra-ui/react";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { IconInfoCircle } from "@tabler/icons-react";
 import { format } from "date-fns";
-import { Project, Request } from "@/models/models";
+import { Project, Request, User } from "@/models/models";
 import { useToast } from "@/hooks/use-toast";
 import MarkAsReturnButton from "./markAsReturnButton";
 
-const RequestsTabular = () => {
+interface Props {
+  user: User;
+  category: string;
+  isAdmin: boolean;
+  isSuperAdmin: boolean;
+}
+
+const RequestsTabular: React.FC<Props> = ({
+  user,
+  category,
+  isAdmin,
+  isSuperAdmin,
+}) => {
   const [getRequests, setGetRequests] = useState(false);
   const [pendingRequests, setPendingRequests] = useState([]);
   const [approvedRequests, setApprovedRequests] = useState([]);
@@ -23,7 +35,7 @@ const RequestsTabular = () => {
   useEffect(() => {
     const fetchRequests = async () => {
       try {
-        const response = await fetch("/api/request");
+        const response = await fetch(`/api/request?pn=${category}`);
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
@@ -56,7 +68,7 @@ const RequestsTabular = () => {
     if (status === "Approved") {
       // Checking Stock
       try {
-        const response = await fetch("/api/inventory");
+        const response = await fetch(`/api/inventory?pn=${category}`);
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
@@ -101,6 +113,7 @@ const RequestsTabular = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
+            category: category,
             task: 0,
             _id: req.inventoryId,
             project: false,
@@ -131,7 +144,7 @@ const RequestsTabular = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          task:  0,
+          task: 0,
           reqId: req._id,
           status: status,
         }),
@@ -148,7 +161,12 @@ const RequestsTabular = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ _id: req._id, task: 0, status: status }),
+        body: JSON.stringify({
+          _id: req._id,
+          task: 0,
+          status: status,
+          category: category,
+        }),
       });
 
       const result = await response.json();
@@ -169,7 +187,7 @@ const RequestsTabular = () => {
   React.useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const response = await fetch("/api/projects");
+        const response = await fetch(`/api/projects?pn=${category}`);
         const data = await response.json();
         const projectTitles = data.projects.map(
           (project: Project) => project.title
@@ -369,6 +387,7 @@ const RequestsTabular = () => {
                             <MarkAsReturnButton
                               req={req}
                               projects={projects}
+                              category={category}
                               getReqsFunc={gettingRequests}
                             />
                           </div>
@@ -432,6 +451,7 @@ const RequestsTabular = () => {
                             <MarkAsReturnButton
                               req={req}
                               projects={projects}
+                              category={category}
                               getReqsFunc={gettingRequests}
                             />
                           </div>

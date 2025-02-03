@@ -175,7 +175,7 @@ const NavBar: React.FC<Props> = ({ superAdmin, user }) => {
                     </PopoverContent>
                   </Popover>
                 </div>
-                <Hamburger_Menu isAdmin={isAdmin} />
+                <Hamburger_Menu user={user} superAdmin={superAdmin} isAdmin={isAdmin} isSuperAdmin={isSuperAdmin} />
               </div>
             ) : (
               <Button className="hidden sm:flex" asChild>

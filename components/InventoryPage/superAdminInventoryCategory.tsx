@@ -20,7 +20,11 @@ import {
 } from "@/components/ui/popover";
 import { Admin } from "@/models/models";
 
-export function SuperAdminInventoryCategoryCombo() {
+interface Props {
+  onChange: (value: string) => void;
+}
+
+const SuperAdminInventoryCategoryCombo: React.FC<Props> = ({onChange}) => {
   const [open, setOpen] = React.useState(false);
   const [value, setValue] = React.useState("BoST");
   const [categories, setCategories] = React.useState<string[]>([]);
@@ -66,6 +70,7 @@ export function SuperAdminInventoryCategoryCombo() {
                   value={category}
                   onSelect={(currentValue) => {
                     setValue(currentValue === value ? "" : currentValue);
+                    onChange(currentValue);
                     setOpen(false);
                   }}
                 >
@@ -85,3 +90,5 @@ export function SuperAdminInventoryCategoryCombo() {
     </Popover>
   );
 }
+
+export default SuperAdminInventoryCategoryCombo;

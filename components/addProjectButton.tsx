@@ -15,39 +15,47 @@ import { Button } from "@/components/ui/button";
 import { UploadButton } from "@/lib/utils/uploadthing";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import SuperAdminInventoryCategoryCombo from "./InventoryPage/superAdminInventoryCategory";
 
-const AddProjectButton = () => {
+interface Props {
+  category: string;
+  isAdmin: boolean;
+  isSuperAdmin: boolean;
+}
+
+const AddProjectButton: React.FC<Props> = ({ category, isAdmin, isSuperAdmin }) => {
   const [title, setTitle] = useState("");
   const [leadName, setLeadName] = useState("");
   const [leadEmail, setLeadEmail] = useState("");
   const [image, setImage] = useState("");
   const [imageName, setImageName] = useState("");
+  const [projCategory, setProjCategory] = useState(category);
   const { toast } = useToast();
 
   // Submit
   const addProject = async () => {
     try {
-        await fetch(`/api/projects`, {
-            method: "POST",
-            body: JSON.stringify({
-              title: title,
-              leadName: leadName,
-              leadEmail: leadEmail,
-              image: image,
-              completed: false,
-              startDate:  new Date().toISOString(),
-              endDate: "Ongoing"
-            }),
-            headers: {
-              "Content-type": "application/json",
-            },
-          });
-         
-    } catch(error: any) {
-        console.log("Error!!");
-        toast({title: "An error has occurred"});
+      await fetch(`/api/projects`, {
+        method: "POST",
+        body: JSON.stringify({
+          category: projCategory,
+          title: title,
+          leadName: leadName,
+          leadEmail: leadEmail,
+          image: image,
+          completed: false,
+          startDate: new Date().toISOString(),
+          endDate: "Ongoing",
+        }),
+        headers: {
+          "Content-type": "application/json",
+        },
+      });
+    } catch (error: any) {
+      console.log("Error!!");
+      toast({ title: "An error has occurred" });
     }
-  }
+  };
   const handleSubmit = (e: any) => {
     if (!image) {
       toast({ title: "Please upload an image before submitting." });
@@ -70,7 +78,7 @@ const AddProjectButton = () => {
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
+            <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="name" className="text-right text-lg font-bold">
                 Title
               </Label>
@@ -82,6 +90,16 @@ const AddProjectButton = () => {
                 onChange={(e) => setTitle(e.target.value)}
                 required
               />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right text-lg font-bold">
+                Category
+              </Label>
+              {isSuperAdmin ? <SuperAdminInventoryCategoryCombo onChange={setProjCategory}/> : (
+                <Label htmlFor="name" className="text-right text-lg font-black">
+                  {category}
+                </Label>
+              )}
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="name" className="text-right text-lg font-bold">

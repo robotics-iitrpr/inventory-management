@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import Image from "next/image";
+import { Admin } from "@/models/models";
 import { Project, User } from "@/models/models";
 import AddProjectButton from "./addProjectButton";
 import { IconCircleDashedCheck, IconTrash } from "@tabler/icons-react";
@@ -10,11 +10,19 @@ import { useToast } from "@/hooks/use-toast";
 
 interface props {
   user: User;
+  category: string;
   isAdmin: boolean;
+  isSuperAdmin: boolean;
 }
 
-const ProjectsSection: React.FC<props> = ({ user, isAdmin }) => {
+const ProjectsSection: React.FC<props> = ({
+  user,
+  category,
+  isAdmin,
+  isSuperAdmin,
+}) => {
   const [projects, setProjects] = useState<Project[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -22,11 +30,32 @@ const ProjectsSection: React.FC<props> = ({ user, isAdmin }) => {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const response = await fetch("/api/projects");
-        const data = await response.json();
-        setProjects(data.projects);
-      } catch (error) {
-        console.error("Error fetching projects:", error);
+        // Fetch categories
+        const res = await fetch("/api/admin");
+        const data = await res.json();
+        const AdminsData = data.admins;
+        const newCategories = [
+          "BoST",
+          ...AdminsData.map((admin: Admin) => admin.category),
+        ];
+
+        setCategories(newCategories); // Update state
+
+        // Fetch inventory **after** categories are set
+        const projectsData = await Promise.all(
+          newCategories.map(async (category) => {
+            const response = await fetch(`/api/projects?pn=${category}`);
+            if (!response.ok) {
+              throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            const data = await response.json();
+            return data.projects;
+          })
+        );
+
+        setProjects(projectsData.flat());
+      } catch (err) {
+        console.error("Error fetching data:", err);
       } finally {
         setLoading(false);
       }
@@ -41,6 +70,7 @@ const ProjectsSection: React.FC<props> = ({ user, isAdmin }) => {
       const response = await fetch("/api/projects", {
         method: "DELETE",
         body: JSON.stringify({
+          category: project.category,
           _id: project._id,
         }),
         headers: {
@@ -62,6 +92,7 @@ const ProjectsSection: React.FC<props> = ({ user, isAdmin }) => {
       const response = await fetch("/api/projects", {
         method: "PUT",
         body: JSON.stringify({
+          category: project.category,
           _id: project._id,
         }),
         headers: {
@@ -78,14 +109,15 @@ const ProjectsSection: React.FC<props> = ({ user, isAdmin }) => {
 
   return (
     <div className="p-8">
-      {isAdmin && <AddProjectButton />}
+      {(isAdmin || isSuperAdmin) && <AddProjectButton category={category} isAdmin={isAdmin} isSuperAdmin={isSuperAdmin} />}
       {loading ? (
         <div className="w-full flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500"></div>
         </div>
       ) : (
         <div className="w-full mt-14 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {projects.map((project: Project) => (
+          {projects.length > 0 && 
+            projects.map((project: Project) => (
             <div
               key={project._id}
               className="bg-gradient-to-br from-white to-gray-50 shadow-lg rounded-xl overflow-hidden transition transform hover:scale-105 hover:shadow-2xl"
@@ -98,7 +130,7 @@ const ProjectsSection: React.FC<props> = ({ user, isAdmin }) => {
               <div className="p-6">
                 <h2 className="text-2xl font-semibold text-gray-900 flex items-center justify-between">
                   {project.title}
-                  {isAdmin && (
+                  {(isAdmin || isSuperAdmin) && (
                     <div className="space-x-3 flex items-center">
                       {project.completed === false && (
                         <button

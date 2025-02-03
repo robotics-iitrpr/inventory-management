@@ -51,6 +51,7 @@ export type Project = {
     completed: boolean;
     startDate: string;
     endDate: string;
+    category: string;
 }
 
 export type UserInventory = {
