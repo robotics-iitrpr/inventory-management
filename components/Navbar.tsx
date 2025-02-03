@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import MaxWidthWrapper from "./MaxWidthWrapper";
 import Link from "next/link";
 import { Button } from "./ui/button";
@@ -8,18 +8,54 @@ import { SignOutButton, useUser } from "@clerk/nextjs";
 import Hamburger_Menu from "./ui/HamburgerMenu";
 import { IconUserFilled } from "@tabler/icons-react";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { Admin, User } from "@/models/models";
 
 interface Props {
-  admin: String;
+  user: User;
+  superAdmin: String;
 }
 
-const NavBar: React.FC<Props> = ({ admin }) => {
-  const { user } = useUser();
-  let isAdmin = false;
-  // Checking if admin
-  admin.split(",").forEach((adm) => {
-    if (user?.primaryEmailAddress?.emailAddress == adm) isAdmin = true;
-  });
+const NavBar: React.FC<Props> = ({ superAdmin, user }) => {
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [category, setCategory] = useState("");
+
+  useEffect(() => {
+    const getAdmins = async () => {
+      try {
+        const res = await fetch(`/api/admin`, {
+          cache: "no-store",
+        });
+        const resJson = await res.json();
+        const adminIdsJson = resJson.admins as Admin[];
+        adminIdsJson.map((admin: Admin) => {
+          if (user.email == admin.email) {
+            setIsAdmin(true);
+            setCategory(admin.category);
+          }
+        });
+      } catch (err) {
+        console.error("Error fetching Admins:", err);
+      }
+
+      try {
+        const res = await fetch(`/api/co_admins`, {
+          cache: "no-store",
+        });
+        const resJson = await res.json();
+        const adminIdsJson = resJson.admins as Admin[];
+        const adminIds = adminIdsJson.map((admin: Admin) => admin.email);
+        setIsSuperAdmin(adminIds.includes(user.email));
+      } catch (err) {
+        console.error("Error fetching Admins:", err);
+      }
+      if (user.email === superAdmin) {
+        setIsAdmin(true);
+        setIsSuperAdmin(true);
+      }
+    };
+    getAdmins();
+  }, []);
   return (
     <nav className="sticky h-14 inset-x-0 top-0 z-30 w-full border-b border-gray-400 backdrop-blur-lg translate-all">
       <MaxWidthWrapper>
@@ -37,7 +73,7 @@ const NavBar: React.FC<Props> = ({ admin }) => {
           </div>
 
           <div className="items-center space-x-4 sm:flex">
-            {user ? null : (
+            {user.id ? null : (
               <Button
                 variant={"ghost"}
                 asChild
@@ -49,16 +85,29 @@ const NavBar: React.FC<Props> = ({ admin }) => {
               </Button>
             )}
 
-            {user ? null : (
+            {user.id ? null : (
               <span
                 className="h-6 w-px bg-gray-200 hidden sm:flex"
                 aria-hidden="true"
               />
             )}
 
-            {user ? (
+            {user.id ? (
               <div className="flex h-full items-center gap-1 space-x-4">
                 <div className="hidden md:flex h-full items-center justify-center space-x-1">
+                  {(user.email === superAdmin) && (
+                    <Button
+                      variant={"ghost"}
+                      asChild
+                      className={
+                        "border-[color:var(--secondary-500)] border sm:border-0"
+                      }
+                    >
+                      <Link href="/admin" className="text-lg font-bold">
+                        Admin Portal
+                      </Link>
+                    </Button>
+                  )}
                   <Button
                     variant={"ghost"}
                     asChild
@@ -94,7 +143,7 @@ const NavBar: React.FC<Props> = ({ admin }) => {
                       </Link>
                     </Button>
                   )}
-                  {isAdmin && (
+                  {(isAdmin || isSuperAdmin) && (
                     <Button
                       variant={"ghost"}
                       asChild
@@ -115,7 +164,7 @@ const NavBar: React.FC<Props> = ({ admin }) => {
                     </PopoverTrigger>
                     <PopoverContent className="w-80 bg-white border border-gray-300 rounded-lg shadow-md p-4">
                       <h1 className="text-lg font-semibold text-gray-800 mb-4 items-center space-x-2">
-                        <span>Welcome, {user.firstName}!</span>
+                        <span>Welcome, {user.name}!</span>
                         <span className="animate-wave">👋</span>
                       </h1>
                       <SignOutButton>
@@ -126,7 +175,7 @@ const NavBar: React.FC<Props> = ({ admin }) => {
                     </PopoverContent>
                   </Popover>
                 </div>
-                <Hamburger_Menu isAdmin={isAdmin}/>
+                <Hamburger_Menu isAdmin={isAdmin} />
               </div>
             ) : (
               <Button className="hidden sm:flex" asChild>

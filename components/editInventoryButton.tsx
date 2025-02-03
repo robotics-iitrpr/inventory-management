@@ -14,13 +14,14 @@ import { IconEdit } from "@tabler/icons-react";
 import { Component, User } from "@/models/models";
 
 interface EditInventoryProps {
-  component: Component
+  component: Component,
+  category: string
 }
 const EditInventoryButton: React.FC<EditInventoryProps> = ({
-  component
+  component,
+  category
 }) => {
   const [newComponent, setNewComponent] = useState(component.component);
-  const [newCategory, setNewCategory] = useState(component.category);
   const [newQuantity, setNewQuantity] = useState(component.inStock);
 
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -43,7 +44,7 @@ const EditInventoryButton: React.FC<EditInventoryProps> = ({
           _id: component._id,
           inStock: newQuantity,
           component: newComponent,
-          category: newCategory,
+          category: category,
         }),
       });
 
@@ -77,19 +78,6 @@ const EditInventoryButton: React.FC<EditInventoryProps> = ({
                 className="col-span-3"
                 value={newComponent}
                 onChange={(e) => setNewComponent(e.target.value)}
-                required
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right text-lg font-bold">
-                Category
-              </Label>
-              <Input
-                id="name"
-                placeholder="Robotic Arm Project"
-                className="col-span-3"
-                value={newCategory}
-                onChange={(e) => setNewCategory(e.target.value)}
                 required
               />
             </div>

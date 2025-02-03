@@ -65,3 +65,14 @@ export type UserInventory = {
     returned: boolean;
     status: string;
 }
+
+export type Admin = {
+    _id: string;
+    email: string;
+    category: string;
+}
+
+export type SuperAdmin = {
+    _id: string;
+    email: string;
+}

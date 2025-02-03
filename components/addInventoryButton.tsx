@@ -14,17 +14,27 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { UploadButton } from "@/lib/utils/uploadthing";
 import { useState } from "react";
+import { User } from "@/models/models";
+import { SuperAdminInventoryCategoryCombo } from "./InventoryPage/superAdminInventoryCategory";
 
-const AddInventoryButton = () => {
+interface Props {
+  user: User;
+  category: string;
+  isSuperAdmin: boolean;
+}
+
+const AddInventoryButton: React.FC<Props> = ({
+  user,
+  category,
+  isSuperAdmin,
+}) => {
   const [component, setComponent] = useState("");
   const [quantity, setQuantity] = useState(0);
   const [image, setImage] = useState("");
-  const [category, setCategory] = useState("");
   const [imageName, setImageName] = useState("");
 
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    // Allow only non-negative whole numbers
     const numericValue = Math.max(1, Math.floor(Number(value)));
     setQuantity(numericValue);
   };
@@ -109,14 +119,11 @@ const AddInventoryButton = () => {
               <Label htmlFor="name" className="text-right text-lg font-bold">
                 Category
               </Label>
-              <Input
-                id="name"
-                placeholder="Robotic Arm Project"
-                className="col-span-3"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                required
-              />
+              {isSuperAdmin ? <SuperAdminInventoryCategoryCombo /> : (
+                <Label htmlFor="name" className="text-right text-lg font-black">
+                  {category}
+                </Label>
+              )}
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label

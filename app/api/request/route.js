@@ -4,9 +4,9 @@ import { NextResponse } from "next/server";
 
 export async function GET(req) {
   try {
-    const database = client.db("Inventory");
+    const category = req.nextUrl.searchParams.get("pn");
+    const database = client.db(category);
     const collection = database.collection("Requests");
-
     const requests = await collection.find({}).toArray();
 
     return NextResponse.json({ requests: requests });
@@ -21,9 +21,9 @@ export async function GET(req) {
 
 export async function POST(req) {
   try {
-    const database = client.db("Inventory");
-    const collection = database.collection("Requests");
     const document = await req.json();
+    const database = client.db(document.category);
+    const collection = database.collection("Requests");
     const res = await collection.insertOne(document);
     return NextResponse.json(res);
   } catch (error) {
@@ -37,9 +37,9 @@ export async function POST(req) {
 
 export async function PUT(req) {
   try {
-    const database = client.db("Inventory");
-    const collection = database.collection("Requests");
     const document = await req.json();
+    const database = client.db(document.category);
+    const collection = database.collection("Requests");
     if (document.task === 0) {
       const result = await collection.updateOne(
         { _id: new ObjectId(document._id) },
@@ -68,10 +68,9 @@ export async function PUT(req) {
 
 export async function DELETE(req) {
   try {
-    const database = client.db("Inventory");
-    const collection = database.collection("Requests");
-
     const document = await req.json();
+    const database = client.db(document.category);
+    const collection = database.collection("Requests");
     // Deleting Request
     await collection.deleteOne({ _id: new ObjectId(document._id) });
     return NextResponse.json({ Result: "Success" });

@@ -58,9 +58,21 @@ const InventoryInfoButton: React.FC<props> = ({ component }) => {
                   className="p-4 bg-gray-100 rounded-lg shadow-md"
                 >
                   {use.project ? (
-                    <p className="font-medium text-gray-800">
-                      {use.projectName}
-                    </p>
+                    <>
+                      <p className="font-bold text-gray-800">
+                        {use.projectName}
+                      </p>
+                      <p className="font-medium text-gray-800">{use.name}</p>
+                      <p className="text-sm text-gray-600">
+                        Email: {use.email}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        Phone: {use.phone}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        Quantity: {use.quantity}
+                      </p>
+                    </>
                   ) : (
                     <>
                       <p className="font-medium text-gray-800">{use.name}</p>

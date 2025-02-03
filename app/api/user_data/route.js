@@ -1,13 +1,11 @@
 import client from "@/lib/mongo";
-import { ObjectId } from "mongodb";
-import { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 export async function GET(req) {
   try {
     const id = req.nextUrl.searchParams.get("pn");
     const database = client.db(id);
-    const collection = database.collection("Inventory");
+    const collection = database.collection("My-Inventory");
     const inventory = await collection.find({}).toArray();
     return NextResponse.json({ inventory: inventory });
   } catch (error) {
@@ -24,7 +22,7 @@ export async function POST(req) {
     const id = req.nextUrl.searchParams.get("pn");
     const document = await req.json();
     const database = client.db(id);
-    const collection = database.collection("Inventory");
+    const collection = database.collection("My-Inventory");
     await collection.insertOne(document);
     return NextResponse.json({ Result: "Success" });
   } catch (error) {
@@ -41,7 +39,7 @@ export async function PUT(req) {
     const id = req.nextUrl.searchParams.get("pn");
     const document = await req.json();
     const database = client.db(id);
-    const collection = database.collection("Inventory");
+    const collection = database.collection("My-Inventory");
     if (document.task === 0)
     {
       await collection.updateOne(

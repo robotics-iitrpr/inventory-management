@@ -12,41 +12,79 @@ import {
 } from "@/components/ui/table";
 import IssueInventoryButton from "./issueInventoryButton";
 import EditInventoryButton from "./editInventoryButton";
-import { Component, User } from "@/models/models";
+import { Admin, Component, User } from "@/models/models";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import AdminIssueInventoryButton from "./adminIssueInventoryButton";
 import { Button } from "./ui/button";
 import { IconTrash } from "@tabler/icons-react";
 import InventoryInfoButton from "./inventoryInfoButton";
 
 interface Props {
   user: User;
+  category: string;
   isAdmin: boolean;
+  isSuperAdmin: boolean;
 }
 
-const InventoryTable: React.FC<Props> = ({ user, isAdmin }) => {
-  const [inventory, setInventory] = useState([]);
+const InventoryTable: React.FC<Props> = ({
+  user,
+  category,
+  isAdmin,
+  isSuperAdmin,
+}) => {
+  const [inventory, setInventory] = useState<Component[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchInventory = async () => {
-      try {
-        const response = await fetch("/api/inventory");
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
+      if (isAdmin) {
+        try {
+          const response = await fetch(`/api/inventory?pn=${category}`);
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          const data = await response.json();
+          setInventory(data.inventory);
+        } catch (err) {
+          console.error("Error fetching inventory:", err);
+          setError("Failed to load inventory.");
+        } finally {
+          setLoading(false);
         }
-        const data = await response.json();
-        setInventory(data.inventory);
-      } catch (err) {
-        console.error("Error fetching inventory:", err);
-        setError("Failed to load inventory.");
-      } finally {
-        setLoading(false);
+      } else {
+        try {
+          // Fetch categories
+          const res = await fetch("/api/admin");
+          const data = await res.json();
+          const AdminsData = data.admins;
+          const newCategories = ["BoST", ...AdminsData.map((admin: Admin) => admin.category)];
+      
+          setCategories(newCategories); // Update state
+      
+          // Fetch inventory **after** categories are set
+          const inventoryData = await Promise.all(
+            newCategories.map(async (category) => {
+              const response = await fetch(`/api/inventory?pn=${category}`);
+              if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+              }
+              const data = await response.json();
+              return data.inventory;
+            })
+          );
+      
+          setInventory(inventoryData.flat());
+        } catch (err) {
+          console.error("Error fetching data:", err);
+          setError("Failed to load data.");
+        } finally {
+          setLoading(false);
+        }
       }
     };
 
@@ -66,12 +104,13 @@ const InventoryTable: React.FC<Props> = ({ user, isAdmin }) => {
         method: "DELETE",
         body: JSON.stringify({
           _id: id,
+          category: category,
         }),
         headers: {
           "Content-Type": "application/json",
         },
       });
-      const result = await response.json();
+      await response.json();
       removeBlock(id);
     } catch (err: any) {
       console.error("Error updating status:", err);
@@ -121,12 +160,10 @@ const InventoryTable: React.FC<Props> = ({ user, isAdmin }) => {
             <TableCell>{item.inStock}</TableCell>
             <TableCell>{item.inUse}</TableCell>
             <TableCell className="text-right space-x-2">
-              {isAdmin ? (
+              {isAdmin || isSuperAdmin ? (
                 <div className="flex space-x-2 justify-end">
-                  <InventoryInfoButton component={item}/>
-                  <AdminIssueInventoryButton component={item} />
-                  <EditInventoryButton component={item} />
-                  {/* <DeleteInventoryButton user={user} component={item} /> */}
+                  <InventoryInfoButton component={item} />
+                  <EditInventoryButton component={item} category={category} />
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button className="bg-red-700">

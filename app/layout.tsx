@@ -8,6 +8,8 @@ import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin";
 import { extractRouterConfig } from "uploadthing/server";
 import { ourFileRouter } from "@/app/api/uploadthing/core";
 import { Toaster } from "@/components/ui/toaster";
+import { currentUser } from "@clerk/nextjs/server";
+import { User } from "@/models/models";
 // import Footer from "@/components/footer";
 
 const geistSans = Geist({
@@ -25,11 +27,17 @@ export const metadata: Metadata = {
   description: "BoST, IIT Ropar",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const user = await currentUser();
+  const curUser: User = {
+    id: user?.id!,
+    name: user?.fullName!,
+    email: user?.primaryEmailAddress?.emailAddress!,
+  };
   return (
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
@@ -37,7 +45,7 @@ export default function RootLayout({
           className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gradient-to-r from-pink-100 via-blue-100 to-purple-100`}
         >
           <Provider>
-            <NavBar admin={process.env.ADMIN!}/>
+            <NavBar superAdmin={process.env.SUPER_ADMIN!} user={curUser}/>
             <NextSSRPlugin routerConfig={extractRouterConfig(ourFileRouter)} />
             {children}
             <Toaster />
