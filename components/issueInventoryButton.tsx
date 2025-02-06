@@ -33,6 +33,10 @@ const IssueInventoryButton: React.FC<Props> = ({ component, user }) => {
   const [open, setOpen] = useState(false);
   const issueInventory = async (e: any) => {
     e.preventDefault();
+    if (!date) {
+      alert("Please select a returning date!!");
+      return;
+    }
     type ReqId = {
       acknowledged: boolean;
       insertedId: string;
